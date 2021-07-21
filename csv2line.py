@@ -24,14 +24,28 @@ def filename(path):
     return os.path.basename(path).split('.csv')[0]
 
 
+g_string_fields = []
+g_tag_keys = []
+g_measurement_name = ""
+
 # @click.option('--output-dir', required=True, type=str, help='Output directory')
+
+
 @click.option('--csv-file', required=True, type=str, help='CSVInput directory')
+@click.option('--string-fields', required=False, type=str, help='Comma seperated string fields')
+@click.option('--tag-keys', required=False, type=str, default="name,topic", help='Tag Key fields')
+@click.option('--force', required=False, type=bool, help='force run with replace')
+@click.option('--measurement', required=True, type=str, help='measurement name')
 @cli.command("convert")
-def cc(csv_file):
+def cc(csv_file, string_fields, tag_keys, force, measurement):
     """convert csv to influx line protocol !!!"""
+    global g_string_fields, g_tag_keys, g_measurement_name
 
     processing_dir = os.path.normpath(os.path.dirname(csv_file))
     output_dir = processing_dir
+    g_string_fields = string_fields.split(",")
+    g_tag_keys = tag_keys.split(",")
+    g_measurement_name = measurement
 
     csv_file_input = csv_file
     done_dir = "{}/.done".format(output_dir)
@@ -41,7 +55,7 @@ def cc(csv_file):
     if not os.path.isdir(done_dir):
         os.makedirs(done_dir, exist_ok=True)
 
-    if os.path.exists(done_flag_file):
+    if not force and os.path.exists(done_flag_file):
         print("{0} exists\r\nSKIPPED!".format(done_flag_file))
         return
 
@@ -100,11 +114,28 @@ def to_line(row):
         row = row.drop(labels=['time', 'name', 'topic'])
 
     row = row[row != 0]
-    s = "{},topic={} ".format(name, topic)
+
+#     tag_keys = ['name', 'topic']
+#     s = "{},topic={} ".format(name, topic)
+#     for tag_key in tag_keys:
+    # print(">", tag_key)
+
+#     print(g_tag_keys)
+    s = ""
+    tag = "{},".format(g_measurement_name)
     for (key, val) in row.iteritems():
-        s += "{}={},".format(key, val)
+        # for tag_key in g_tag_keys:
+        #     print(">", tag_key)
+        # print("key", key)
+        # if key in g_tag_keys:
+        #     tag += "{}=\"{}\",".format(key, val)
+        if key in g_string_fields:
+            val = val.replace(" ", '\\ ')
+            tag += "{}={},".format(key, val)
+        else:
+            s += "{}={},".format(key, val)
     s = s[:-1] + ' ' + str(time) + '\n'
-    return s
+    return tag[:-1] + ' ' + s
 
 # def write_meta(db, output_dir):
 # 	lines = [
