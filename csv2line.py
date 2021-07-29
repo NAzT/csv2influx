@@ -134,6 +134,7 @@ def to_line(row):
         # if key in g_tag_keys:
         #     tag += "{}=\"{}\",".format(key, val)
         if key in g_drop_fields:
+            print(key)
             continue
         if key in g_string_fields:
             #     val = val.replace(" ", '\\ ')
