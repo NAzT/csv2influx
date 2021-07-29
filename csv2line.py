@@ -28,7 +28,7 @@ g_string_fields = []
 g_tag_keys = []
 g_time_field = ""
 g_measurement_name = ""
-g_drop_fields = True
+g_drop_fields = []
 
 # @click.option('--output-dir', required=True, type=str, help='Output directory')
 
@@ -115,7 +115,7 @@ def to_line(row):
     if 'host' in row:
         row = row.drop(labels=[g_time_field])
     else:
-        row = row.drop(labels=[g_time_field])
+        row = row.drop(labels=[g_time_field]+g_drop_fields)
 
     row = row[row != 0]
 
@@ -133,9 +133,9 @@ def to_line(row):
         # print("key", key)
         # if key in g_tag_keys:
         #     tag += "{}=\"{}\",".format(key, val)
-        if key in g_drop_fields:
-            print(key)
-            continue
+        # if key in g_drop_fields:
+        #     print(key)
+        #     continue
         if key in g_string_fields:
             #     val = val.replace(" ", '\\ ')
             val = val.replace(" ", '\\ ')
