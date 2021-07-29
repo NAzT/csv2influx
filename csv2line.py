@@ -28,6 +28,7 @@ g_string_fields = []
 g_tag_keys = []
 g_time_field = ""
 g_measurement_name = ""
+g_drop_fields = True
 
 # @click.option('--output-dir', required=True, type=str, help='Output directory')
 
@@ -36,13 +37,15 @@ g_measurement_name = ""
 @click.option('--string-fields', required=False, type=str, help='Comma seperated string fields')
 @click.option('--tag-keys', required=False, type=str, default="name,topic", help='Tag Key fields')
 @click.option('--time-field', required=False, type=str, default="time", help='name of time field')
+@click.option('--drop-fields', required=False, default='Unnamed 0', type=str, help='drop fields')
 @click.option('--force', required=False, type=bool, help='force run with replace')
 @click.option('--measurement', required=True, type=str, help='measurement name')
 @cli.command("convert")
-def cc(csv_file, string_fields, tag_keys, time_field, force, measurement):
+def cc(csv_file, string_fields, tag_keys, time_field, drop_fields, force, measurement):
     """convert csv to influx line protocol !!!"""
-    global g_string_fields, g_tag_keys, g_measurement_name, g_time_field
+    global g_string_fields, g_tag_keys, g_measurement_name, g_time_field, g_drop_fields
 
+    g_drop_fields = drop_fields.split(",")
     processing_dir = os.path.normpath(os.path.dirname(csv_file))
     output_dir = processing_dir
     g_string_fields = string_fields.split(",")
@@ -130,6 +133,8 @@ def to_line(row):
         # print("key", key)
         # if key in g_tag_keys:
         #     tag += "{}=\"{}\",".format(key, val)
+        if key in g_drop_fields:
+            continue
         if key in g_string_fields:
             #     val = val.replace(" ", '\\ ')
             val = val.replace(" ", '\\ ')
