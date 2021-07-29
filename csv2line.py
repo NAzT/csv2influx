@@ -26,6 +26,7 @@ def filename(path):
 
 g_string_fields = []
 g_tag_keys = []
+g_time_field = ""
 g_measurement_name = ""
 
 # @click.option('--output-dir', required=True, type=str, help='Output directory')
@@ -34,18 +35,20 @@ g_measurement_name = ""
 @click.option('--csv-file', required=True, type=str, help='CSVInput directory')
 @click.option('--string-fields', required=False, type=str, help='Comma seperated string fields')
 @click.option('--tag-keys', required=False, type=str, default="name,topic", help='Tag Key fields')
+@click.option('--time-field', required=False, type=str, default="time", help='name of time field')
 @click.option('--force', required=False, type=bool, help='force run with replace')
 @click.option('--measurement', required=True, type=str, help='measurement name')
 @cli.command("convert")
-def cc(csv_file, string_fields, tag_keys, force, measurement):
+def cc(csv_file, string_fields, tag_keys, time_field, force, measurement):
     """convert csv to influx line protocol !!!"""
-    global g_string_fields, g_tag_keys, g_measurement_name
+    global g_string_fields, g_tag_keys, g_measurement_name, g_time_field
 
     processing_dir = os.path.normpath(os.path.dirname(csv_file))
     output_dir = processing_dir
     g_string_fields = string_fields.split(",")
     g_tag_keys = tag_keys.split(",")
     g_measurement_name = measurement
+    g_time_field = time_field
 
     csv_file_input = csv_file
     done_dir = "{}/.done".format(output_dir)
@@ -105,13 +108,11 @@ def cc(csv_file, string_fields, tag_keys, force, measurement):
 
 
 def to_line(row):
-    time = row['time']
-    name = row['name']
-    topic = row['topic']
+    time = row[g_time_field]
     if 'host' in row:
-        row = row.drop(labels=['time', 'name', 'topic', 'host'])
+        row = row.drop(labels=[g_time_field])
     else:
-        row = row.drop(labels=['time', 'name', 'topic'])
+        row = row.drop(labels=[g_time_field])
 
     row = row[row != 0]
 
@@ -130,6 +131,7 @@ def to_line(row):
         # if key in g_tag_keys:
         #     tag += "{}=\"{}\",".format(key, val)
         if key in g_string_fields:
+            #     val = val.replace(" ", '\\ ')
             val = val.replace(" ", '\\ ')
             tag += "{}={},".format(key, val)
         else:

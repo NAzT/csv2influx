@@ -20,3 +20,8 @@ for i in $(find csv/ -name \*.csv); do echo "$i"; /Users/nat/.virtualenvs/nn/bin
 
 for i in $(find csv/ -name \*.csv); do echo "$i"; csv2line  convert --csv-file="$i"; done
 ```
+
+
+
+pip3 install .;csv2line convert --csv-file='/Users/nat/Downloads/csv/AddLiquidityDayDatas/2021-07-27.csv' --field-time=date  --string-fields=swapid,token0,token1,token2,token3 --measurement=v1 --force True
+
