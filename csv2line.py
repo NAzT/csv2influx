@@ -139,7 +139,7 @@ def to_line(row):
         if key in g_string_fields:
             #     val = val.replace(" ", '\\ ')
             val = val.replace(" ", '\\ ')
-            tag += "{}={},".format(key, val)
+            tag += f'''{key}={val},'''
         else:
             s += "{}={},".format(key, val)
     s = s[:-1] + ' ' + str(time) + '\n'
